@@ -1,10 +1,14 @@
+image: docker:latest
+
+services:
+  - docker:dind
 
 stages:
   - build
   - push
 
-variables:
-  DOCKER_IMAGE_NAME: registry.gitlab.com/iwaltgen/gitlab-ci-test:0.1.$CI_JOB_ID
+before_script:
+  - docker login -u $CI_USERNAME -p $CI_ACCESS_TOKEN $CI_REGISTRY
 
 build-server:
   stage: build
@@ -14,7 +18,7 @@ build-server:
   - master
   script:
     - echo 'build docker server image'
-    - docker build -t $DOCKER_IMAGE_NAME .
+    - docker build -t "$CI_REGISTRY/$CI_PROJECT_PATH" .
 
 push-docker-image:
   stage: push
@@ -24,4 +28,4 @@ push-docker-image:
   - master
   script:
     - echo 'push docker server image'
-    - docker push $DOCKER_IMAGE_NAME
+    - docker push "$CI_REGISTRY/$CI_PROJECT_PATH"
