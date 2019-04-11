@@ -1,0 +1,27 @@
+
+stages:
+  - build
+  - push
+
+variables:
+  DOCKER_IMAGE_NAME: registry.gitlab.com/iwaltgen/gitlab-ci-test:0.1.$CI_JOB_ID
+
+build-server:
+  stage: build
+  environment:
+    name: master
+  only:
+  - master
+  script:
+    - echo 'build docker server image'
+    - docker build -t $DOCKER_IMAGE_NAME .
+
+push-docker-image:
+  stage: push
+  environment:
+    name: master
+  only:
+  - master
+  script:
+    - echo 'push docker server image'
+    - docker push $DOCKER_IMAGE_NAME
