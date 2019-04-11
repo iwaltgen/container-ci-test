@@ -1,22 +1,16 @@
-image: docker:stable
+image: docker:dind
 
 stages:
   - build image
-  - push to registry
 
-build-server:
+build server:
   stage: build image
+  environment: development
   only:
-  - master
+    - master
   script:
     - docker info
-    - docker build -t "$REGISTRY_URL/$CI_PROJECT_PATH" .
-
-push-docker-image:
-  stage: push to registry
-  only:
-  - master
-  script:
     - echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $REGISTRY_URL
+    - docker build -t "$REGISTRY_URL/$CI_PROJECT_PATH" .
     - docker push "$REGISTRY_URL/$CI_PROJECT_PATH"
     - docker image rm "$REGISTRY_URL/$CI_PROJECT_PATH"
