@@ -1,7 +1,13 @@
-image: docker:dind
+image: docker:stable
+
+services:
+  - docker:dind
 
 stages:
   - build image
+
+before_script:
+  - echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $REGISTRY_URL
 
 build server:
   stage: build image
@@ -9,8 +15,6 @@ build server:
   only:
     - master
   script:
-    - docker info
-    - echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $REGISTRY_URL
     - docker build -t "$REGISTRY_URL/$CI_PROJECT_PATH" .
     - docker push "$REGISTRY_URL/$CI_PROJECT_PATH"
     - docker image rm "$REGISTRY_URL/$CI_PROJECT_PATH"
