@@ -1,31 +1,22 @@
-image: docker:latest
-
-services:
-  - docker:dind
+image: docker:stable
 
 stages:
-  - build
-  - push
-
-before_script:
-  - docker login -u $CI_USERNAME -p $CI_ACCESS_TOKEN $CI_REGISTRY
+  - build image
+  - push to registry
 
 build-server:
-  stage: build
-  environment:
-    name: master
+  stage: build image
   only:
   - master
   script:
-    - echo 'build docker server image'
-    - docker build -t "$CI_REGISTRY/$CI_PROJECT_PATH" .
+    - docker info
+    - docker build -t "$REGISTRY_URL/$CI_PROJECT_PATH" .
 
 push-docker-image:
-  stage: push
-  environment:
-    name: master
+  stage: push to registry
   only:
   - master
   script:
-    - echo 'push docker server image'
-    - docker push "$CI_REGISTRY/$CI_PROJECT_PATH"
+    - echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $REGISTRY_URL
+    - docker push "$REGISTRY_URL/$CI_PROJECT_PATH"
+    - docker image rm "$REGISTRY_URL/$CI_PROJECT_PATH"
