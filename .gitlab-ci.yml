@@ -3,17 +3,36 @@ image: docker:stable
 services:
   - docker:dind
 
+stages:
+  - test
+  - build
+  - deploy
+
 variables:
+  DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
-  IMAGE_NAME: $REGISTRY_URL/$CI_PROJECT_PATH
+  DOCKER_IMAGE_NAME: $REGISTRY_URL/$CI_PROJECT_PATH
+
+test server:
+  image: golang
+  stage: test
+  only:
+    - master
+  script:
+    - go test
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - /go
 
 build server:
   stage: build
   environment:
     name: development
-  # only:
-  #   - master
+    url: dev.gitlab-ci-test.com
+  only:
+    - master
   script:
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
-    - docker build --pull -t $IMAGE_NAME --cache-from $IMAGE_NAME .
-    - docker push $IMAGE_NAME
+    - docker build --pull -t $DOCKER_IMAGE_NAME .
+    - docker push $DOCKER_IMAGE_NAME
