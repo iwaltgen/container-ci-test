@@ -20,9 +20,9 @@ build server:
 # test e2e server:
 #   stage: test
 #   only:
-#     - master
+#   - master
 #   script:
-#     - e2e-test.sh
+#   - e2e-test.sh
 
 # deploy server:
 #   stage: deploy
@@ -30,6 +30,6 @@ build server:
 #     name: development
 #     url: dev.gitlab-ci-test.com
 #   only:
-#     - master
+#   - master
 #   script:
-#     - deploy.sh
+#   - deploy.sh
