@@ -15,7 +15,5 @@ build server:
   #   - master
   script:
     - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
-    - docker pull $IMAGE_NAME || true
-    - docker build --cache-from $IMAGE_NAME:latest -t $IMAGE_NAME .
+    - docker build --pull -t $IMAGE_NAME --cache-from $IMAGE_NAME .
     - docker push $IMAGE_NAME
-    - docker image rm $IMAGE_NAME
