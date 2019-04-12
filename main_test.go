@@ -15,12 +15,24 @@ func TestRouter(t *testing.T) {
 	e := echo.New()
 	e = addRoutes(e)
 
-	rec := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	{
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-	e.ServeHTTP(rec, req)
+		e.ServeHTTP(rec, req)
 
-	expected := "Hello, World!"
-	actual := rec.Body.String()
-	assert.Equal(expected, actual)
+		expected := "Hello, World!"
+		actual := rec.Body.String()
+		assert.Equal(expected, actual)
+	}
+
+	{
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/machine", nil)
+
+		e.ServeHTTP(rec, req)
+
+		actual := rec.Body.String()
+		assert.NotEmpty(actual)
+	}
 }
