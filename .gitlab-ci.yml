@@ -1,7 +1,7 @@
 image: docker:stable
 
 services:
-  - docker:dind
+- docker:dind
 
 variables:
   # DOCKER_HOST: tcp://docker:2375
@@ -11,11 +11,11 @@ variables:
 build server:
   stage: build
   only:
-    - master
+  - master
   script:
-    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
-    - docker build --pull -t $DOCKER_IMAGE_NAME .
-    - docker push $DOCKER_IMAGE_NAME
+  - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+  - docker build --pull -t $DOCKER_IMAGE_NAME .
+  - docker push $DOCKER_IMAGE_NAME
 
 # test e2e server:
 #   stage: test
