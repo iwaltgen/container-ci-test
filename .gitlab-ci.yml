@@ -3,18 +3,19 @@ image: docker:stable
 services:
   - docker:dind
 
-stages:
-  - build image
-
-before_script:
-  - echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $REGISTRY_URL
+variables:
+  DOCKER_DRIVER: overlay2
+  IMAGE_NAME: $REGISTRY_URL/$CI_PROJECT_PATH
 
 build server:
-  stage: build image
-  environment: development
-  only:
-    - master
+  stage: build
+  environment:
+    name: development
+  # only:
+  #   - master
   script:
-    - docker build -t "$REGISTRY_URL/$CI_PROJECT_PATH" .
-    - docker push "$REGISTRY_URL/$CI_PROJECT_PATH"
-    - docker image rm "$REGISTRY_URL/$CI_PROJECT_PATH"
+    - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+    - docker pull $IMAGE_NAME || true
+    - docker build --cache-from $IMAGE_NAME:latest -t $IMAGE_NAME .
+    - docker push $IMAGE_NAME
+    - docker image rm $IMAGE_NAME
