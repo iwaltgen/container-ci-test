@@ -12,9 +12,9 @@ variables:
 ## build
 container_build:
   stage: build
-  image: docker:stage
+  image: docker:stable
   services:
-    - docker:stage-dind
+    - docker:stable-dind
 
   variables:
     DOCKER_DRIVER: overlay2
