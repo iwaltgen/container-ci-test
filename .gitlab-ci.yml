@@ -39,6 +39,7 @@ container_scan:
 
   allow_failure: true
   script:
+    - docker login -u $CI_REGISTRY_USERNAME -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker run -d --name db arminc/clair-db:latest
     - docker run -p 6060:6060 --link db:postgres -d --name clair --restart on-failure arminc/clair-local-scan:v2.0.6
     - apk add -U wget ca-certificates
@@ -73,7 +74,7 @@ container_publish:
     - docker login -u $CI_REGISTRY_USERNAME -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker pull "$CI_REGISTRY_IMAGE_BUILD"
     - docker tag "$CI_REGISTRY_IMAGE_BUILD" "CI_REGISTRY_IMAGE_BRANCH"
-    - docker push "CI_REGISTRY_IMAGE_BRANCH"
+    - docker push "$CI_REGISTRY_IMAGE_BRANCH"
     - |
         if [ "$CI_COMMIT_REF_NAME" == "master" ]; then
           docker tag "$CI_REGISTRY_IMAGE_BUILD" "${CI_REGISTRY_IMAGE}:latest"
