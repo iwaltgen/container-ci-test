@@ -7,7 +7,6 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go test -v
 RUN GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o server
 
 # image stage

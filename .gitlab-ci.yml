@@ -1,13 +1,16 @@
 
-stages:
-  - build
-  - scan
-  - publish
+# stages:
+#   - build
+#   - scan
+#   - publish
 
 variables:
   CI_REGISTRY_IMAGE_BRANCH: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
   CI_REGISTRY_IMAGE_BRANCH_BUILDER: ${CI_REGISTRY_IMAGE}/${CI_COMMIT_REF_SLUG}:builder
-  CI_REGISTRY_IMAGE_BUILD: ${CI_REGISTRY_IMAGE}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}
+  DOCKER_DRIVER: overlay2
+
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 
 ## build
@@ -17,18 +20,18 @@ container_build:
   services:
     - docker:stable-dind
 
-  variables:
-    DOCKER_DRIVER: overlay2
-
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker pull "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" || true
     - docker build --target builder --cache-from "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" -t $CI_REGISTRY_IMAGE_BRANCH_BUILDER .
     - docker pull "$CI_REGISTRY_IMAGE_BRANCH" || true
-    - docker build --cache-from "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" --cache-from "$CI_REGISTRY_IMAGE_BRANCH" -t $CI_REGISTRY_IMAGE_BUILD .
-    - docker push $CI_REGISTRY_IMAGE_BUILD
+    - docker build --cache-from "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" --cache-from "$CI_REGISTRY_IMAGE_BRANCH" -t $CI_REGISTRY_IMAGE_BRANCH .
     - docker push $CI_REGISTRY_IMAGE_BRANCH_BUILDER
+    - docker push $CI_REGISTRY_IMAGE_BRANCH
+    - |
+        if [ "$CI_COMMIT_REF_NAME" == "master" ]; then
+          docker tag "$CI_REGISTRY_IMAGE_BRANCH" "${CI_REGISTRY_IMAGE}:latest"
+          docker push "${CI_REGISTRY_IMAGE}:latest"
+        fi
 
 
 ## scan
@@ -38,17 +41,12 @@ container_build:
 #   services:
 #     - docker:stable-dind
 
-#   variables:
-#     DOCKER_DRIVER: overlay2
-
 #   allow_failure: true
-#   before_script:
-#     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 #   script:
 #     - docker run -d --name db arminc/clair-db:latest
 #     - docker run -p 6060:6060 --link db:postgres -d --name clair --restart on-failure arminc/clair-local-scan:v2.0.6
 #     - apk add -U wget ca-certificates
-#     - docker pull $CI_REGISTRY_IMAGE_BUILD
+#     - docker pull $CI_REGISTRY_IMAGE_BRANCH
 #     - wget https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64
 #     - mv clair-scanner_linux_amd64 clair-scanner
 #     - chmod +x clair-scanner
@@ -57,7 +55,7 @@ container_build:
 #     - retries=0
 #     - echo "Waiting for clair daemon to start"
 #     - while( ! wget -T 10 -q -O /dev/null http://docker:6060/v1/namespaces ) ; do sleep 1 ; echo -n "." ; if [ $retries -eq 10 ] ; then echo " Timeout, aborting." ; exit 1 ; fi ; retries=$(($retries+1)) ; done
-#     - ./clair-scanner -c http://docker:6060 --ip $(hostname -i) -r gl-container-scanning-report.json -l clair.log -w clair-whitelist.yml $CI_REGISTRY_IMAGE_BUILD || true
+#     - ./clair-scanner -c http://docker:6060 --ip $(hostname -i) -r gl-container-scanning-report.json -l clair.log -w clair-whitelist.yml $CI_REGISTRY_IMAGE_BRANCH || true
 
 #   artifacts:
 #     paths: [gl-container-scanning-report.json]
@@ -65,25 +63,18 @@ container_build:
 
 
 ## publish
-container_publish:
-  stage: publish
-  image: docker:stable
-  services:
-    - docker:stable-dind
+# container_publish:
+#   stage: publish
+#   image: docker:stable
+#   services:
+#     - docker:stable-dind
 
-  variables:
-    DOCKER_DRIVER: overlay2
-    GIT_STRATEGY: none
-
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker pull "$CI_REGISTRY_IMAGE_BUILD"
-    - docker tag "$CI_REGISTRY_IMAGE_BUILD" "$CI_REGISTRY_IMAGE_BRANCH"
-    - docker push "$CI_REGISTRY_IMAGE_BRANCH"
-    - |
-        if [ "$CI_COMMIT_REF_NAME" == "master" ]; then
-          docker tag "$CI_REGISTRY_IMAGE_BUILD" "${CI_REGISTRY_IMAGE}:latest"
-          docker push "${CI_REGISTRY_IMAGE}:latest"
-        fi
+#   script:
+#     - docker pull "$CI_REGISTRY_IMAGE_BRANCH"
+#     - docker push "$CI_REGISTRY_IMAGE_BRANCH"
+#     - |
+#         if [ "$CI_COMMIT_REF_NAME" == "master" ]; then
+#           docker tag "$CI_REGISTRY_IMAGE_BRANCH" "${CI_REGISTRY_IMAGE}:latest"
+#           docker push "${CI_REGISTRY_IMAGE}:latest"
+#         fi
 
