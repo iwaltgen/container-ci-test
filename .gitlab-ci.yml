@@ -20,7 +20,7 @@ container_build:
     DOCKER_DRIVER: overlay2
 
   before_script:
-    - docker login -u $CI_REGISTRY_USERNAME -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker pull "${CI_REGISTRY_IMAGE_BRANCH}" || true
     - docker build --cache-from "${CI_REGISTRY_IMAGE_BRANCH}" -t $CI_REGISTRY_IMAGE_BUILD .
@@ -39,7 +39,7 @@ container_scan:
 
   allow_failure: true
   before_script:
-    - docker login -u $CI_REGISTRY_USERNAME -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker run -d --name db arminc/clair-db:latest
     - docker run -p 6060:6060 --link db:postgres -d --name clair --restart on-failure arminc/clair-local-scan:v2.0.6
@@ -71,7 +71,7 @@ container_publish:
     GIT_STRATEGY: none
 
   before_script:
-    - docker login -u $CI_REGISTRY_USERNAME -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker pull "$CI_REGISTRY_IMAGE_BUILD"
     - docker tag "$CI_REGISTRY_IMAGE_BUILD" "$CI_REGISTRY_IMAGE_BRANCH"
