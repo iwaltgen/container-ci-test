@@ -1,11 +1,11 @@
-# build base stage
-FROM golang AS build_base
+
+# build stage
+FROM golang AS builder
 WORKDIR /workspace
+
 COPY go.mod go.sum ./
 RUN go mod download
 
-# build binary stage
-FROM build_base AS builder
 COPY . .
 RUN go test -v
 RUN GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o server
