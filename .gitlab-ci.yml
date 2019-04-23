@@ -15,12 +15,11 @@ container_build:
   services:
     - docker:stable-dind
 
-  before_script:
+  script:
     - echo "CI_PIPELINE_ID - $CI_PIPELINE_ID"
     - echo "CI_CONCURRENT_ID - $CI_CONCURRENT_ID"
     - echo "CI_JOB_ID - $CI_JOB_ID"
     - echo "CI_PROJECT_ID - $CI_PROJECT_ID"
-  script:
     - docker pull "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" || true
     - docker build --target builder --cache-from "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" -t $CI_REGISTRY_IMAGE_BRANCH_BUILDER .
     - docker pull "$CI_REGISTRY_IMAGE_BRANCH" || true
