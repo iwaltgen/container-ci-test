@@ -1,9 +1,4 @@
 
-# stages:
-#   - build
-#   - scan
-#   - publish
-
 variables:
   CI_REGISTRY_IMAGE_BRANCH: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
   CI_REGISTRY_IMAGE_BRANCH_BUILDER: ${CI_REGISTRY_IMAGE}/${CI_COMMIT_REF_SLUG}:builder
@@ -13,13 +8,18 @@ before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 
-## build
+# container build
 container_build:
   stage: build
   image: docker:stable
   services:
     - docker:stable-dind
 
+  before_script:
+    - echo "CI_PIPELINE_ID - $CI_PIPELINE_ID"
+    - echo "CI_CONCURRENT_ID - $CI_CONCURRENT_ID"
+    - echo "CI_JOB_ID - $CI_JOB_ID"
+    - echo "CI_PROJECT_ID - $CI_PROJECT_ID"
   script:
     - docker pull "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" || true
     - docker build --target builder --cache-from "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" -t $CI_REGISTRY_IMAGE_BRANCH_BUILDER .
@@ -34,7 +34,7 @@ container_build:
         fi
 
 
-## scan
+## constainer scan
 # container_scan:
 #   stage: scan
 #   image: docker:stable
@@ -62,9 +62,9 @@ container_build:
 #     expire_in: 1 week
 
 
-## publish
-# container_publish:
-#   stage: publish
+## container deploy
+# container_deploy:
+#   stage: deploy
 #   image: docker:stable
 #   services:
 #     - docker:stable-dind
