@@ -12,7 +12,13 @@ steps:
 - name: publish
   image: plugins/docker
   settings:
-    repo: iwaltgen/isolated-ci-test
+    repo: iwaltgen/container-ci-test
+    username:
+      from_secret: DOCKER_USERNAME
+    password:
+      from_secret: DOCKER_PASSWORD
+    registry:
+      from_secret: DOCKER_REGISTRY
     tags: [ latest, 1.0.0, 1 ]
 
 ---
