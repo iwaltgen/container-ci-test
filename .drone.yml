@@ -12,7 +12,8 @@ steps:
 - name: publish
   image: plugins/docker
   settings:
-    repo: iwaltgen/container-ci-test
+    repo:
+      from_secret: DOCKER_IMAGE
     username:
       from_secret: DOCKER_USERNAME
     password:
