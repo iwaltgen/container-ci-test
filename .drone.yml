@@ -9,32 +9,8 @@ steps:
   - go test
   - go build
 
-
-# variables:
-#   CI_REGISTRY_IMAGE_BRANCH: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
-#   CI_REGISTRY_IMAGE_BRANCH_BUILDER: ${CI_REGISTRY_IMAGE}/${CI_COMMIT_REF_SLUG}:builder
-#   DOCKER_DRIVER: overlay2
-
-# before_script:
-#   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
-
-# ## build
-# container_build:
-#   stage: build
-#   image: docker:stable
-#   services:
-#     - docker:stable-dind
-
-#   script:
-#     - docker pull "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" || true
-#     - docker build --target builder --cache-from "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" -t $CI_REGISTRY_IMAGE_BRANCH_BUILDER .
-#     - docker pull "$CI_REGISTRY_IMAGE_BRANCH" || true
-#     - docker build --cache-from "$CI_REGISTRY_IMAGE_BRANCH_BUILDER" --cache-from "$CI_REGISTRY_IMAGE_BRANCH" -t $CI_REGISTRY_IMAGE_BRANCH .
-#     - docker push $CI_REGISTRY_IMAGE_BRANCH_BUILDER
-#     - docker push $CI_REGISTRY_IMAGE_BRANCH
-#     - |
-#         if [ "$CI_COMMIT_REF_NAME" == "master" ]; then
-#           docker tag "$CI_REGISTRY_IMAGE_BRANCH" "${CI_REGISTRY_IMAGE}:latest"
-#           docker push "${CI_REGISTRY_IMAGE}:latest"
-#         fi
+- name: publish
+  image: plugins/docker
+  settings:
+    repo: iwaltgen/isolated-ci-test
+    tags: [ latest, 1.0.0, 1 ]
