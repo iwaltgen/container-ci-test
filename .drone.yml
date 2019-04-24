@@ -20,6 +20,6 @@ steps:
       from_secret: DOCKER_PASSWORD
     registry:
       from_secret: DOCKER_REGISTRY
-    tags: [ latest, 1.0.0, 1 ]
+    tags: [ latest, 1.0 ]
 
 ---
