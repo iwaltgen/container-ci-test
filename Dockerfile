@@ -11,5 +11,6 @@ RUN GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o server
 
 # image stage
 FROM scratch
+# FROM gcr.io/distroless/base
 COPY --from=builder /workspace/server /go/bin/server
 CMD ["/go/bin/server"]
