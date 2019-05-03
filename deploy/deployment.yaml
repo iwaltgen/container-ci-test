@@ -1,0 +1,38 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: container-ci-test
+  namespace: sample
+  labels:
+    app: container-ci-test
+  annotations:
+    type: sample
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: container-ci-test
+  template:
+    metadata:
+      labels:
+        app: container-ci-test
+    spec:
+      containers:
+      - name: container-ci-test
+        image: registry.gitlab.com/iwaltgen/container-ci-test
+        ports:
+        - name: http
+          containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 15
+          timeoutSeconds: 1
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 0
+          timeoutSeconds: 1
